@@ -42,7 +42,7 @@ public class GamePanel extends JPanel implements Runnable{
         addMouseMotionListener(mouse);
         addMouseListener(mouse);
 
-        chessNineSixty();
+        // chessNineSixty();
         // setPieces();
         copyPieces(pieces, simPieces);
     }
