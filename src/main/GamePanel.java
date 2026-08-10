@@ -125,111 +125,86 @@ public class GamePanel extends JPanel implements Runnable{
     public void chessNineSixtyPieces(){
         Random rand = new Random();
 
-        //For Documentation Purposes
-        ArrayList<String> piecesAdded = new ArrayList<>();
+        //Piece codes for the back rank. Final locals so they can be used as switch labels.
+        final int BISHOP = 0;
+        final int KNIGHT = 1;
+        final int ROOK = 2;
+        final int QUEEN = 3;
+        final int KING = 4;
 
-        int numberOfBishops = 2;
-        int numberOfKnights = 2;
-        int numberOfRooks = 2;
-        int numberOfQueens = 1;
-        int numberOfKings = 1;
-        boolean lightTileBishop = false;
-        boolean dankTileBishop = false;
-        //Columns 1 to 8
-        for (int i = 0; i < 8; i++) {
-            //Select the piece to place.
-            int randomPiece = rand.nextInt(5)+1;
+        //The eight pieces that make up a back rank, in any order
+        int[] backRank = {BISHOP, BISHOP, KNIGHT, KNIGHT, ROOK, ROOK, QUEEN, KING};
 
-            //                  BISHOP LOGIC
+        //Shuffle the whole rank, then keep it only if it is a legal Chess960 setup.
+        //Judging a finished rank instead of one square at a time is what makes this
+        //terminate: a square-by-square placer can reach a dead end it cannot back out of.
+        boolean legalSetup;
 
-            if (randomPiece == 1) {
-                if (numberOfBishops == 0) {
-                    i--;
-                    piecesAdded.add("UNTILED BISHOP ATTEMPTED, ");
-                    continue;
-                }
-                if (i % 2 == 0) {
-                    if (lightTileBishop == true) {
-                        i--;
-                        piecesAdded.add("LIGHT BISHOP ATTEMPTED, ");
-                        continue;
-                    }else{
-                        pieces.add(new Bishop(i, 7, WHITE));
-                        pieces.add(new Bishop(i, 0, BLACK));
-                        piecesAdded.add("LIGHT BISHOP, ");
-                        numberOfBishops--;
-                        lightTileBishop = true;
-                        continue;
+        do {
+            //Fisher-Yates shuffle
+            for (int i = backRank.length - 1; i > 0; i--) {
+                int j = rand.nextInt(i + 1);
+                int temp = backRank[i];
+                backRank[i] = backRank[j];
+                backRank[j] = temp;
+            }
+
+            //Find the pieces whose placement is restricted
+            int firstBishop = -1, secondBishop = -1;
+            int firstRook = -1, secondRook = -1;
+            int king = -1;
+
+            for (int col = 0; col < backRank.length; col++) {
+                if (backRank[col] == BISHOP) {
+                    if (firstBishop == -1) {
+                        firstBishop = col;
+                    } else {
+                        secondBishop = col;
                     }
-                }else{
-                    if (dankTileBishop == true) {
-                        i--;
-                        piecesAdded.add("DARK BISHOP ATTEMPTED, ");
-                        continue;
-                    }else{
-                        pieces.add(new Bishop(i, 7, WHITE));
-                        pieces.add(new Bishop(i, 0, BLACK));
-                        piecesAdded.add("DARK BISHOP, ");
-                        numberOfBishops--;
-                        dankTileBishop = true;
-                        continue;
+                } else if (backRank[col] == ROOK) {
+                    if (firstRook == -1) {
+                        firstRook = col;
+                    } else {
+                        secondRook = col;
                     }
+                } else if (backRank[col] == KING) {
+                    king = col;
                 }
             }
 
-            //                  KNIGHT LOGIC
-            if (randomPiece == 2 && numberOfKnights != 0) {
-                pieces.add(new Knight(i, 7, WHITE));
-                pieces.add(new Knight(i, 0, BLACK));
-                piecesAdded.add("KNIGHT, ");
-                numberOfKnights--;
-                continue;
-            } else if(randomPiece == 2 && numberOfKnights == 0){
-                i--;
-                piecesAdded.add("KNIGHT ATTEMPTED, ");
-                continue;
-            }
+            //The two bishops must land on opposite coloured squares, and the king must sit
+            //between the two rooks so that both castling moves have a rook to castle with
+            legalSetup = (firstBishop % 2) != (secondBishop % 2)
+                    && firstRook < king && king < secondRook;
 
-            //                  ROOK LOGIC
-            if (randomPiece == 3 && numberOfRooks != 0) {
-                pieces.add(new Rook(i, 7, WHITE));
-                pieces.add(new Rook(i, 0, BLACK));
-                piecesAdded.add("ROOK, ");
-                numberOfRooks--;
-                continue;
-            }   else if(randomPiece == 3 && numberOfRooks == 0){
-                i--;
-                piecesAdded.add("ROOK ATTEMPTED, ");
-                continue;
-            }
+        } while (!legalSetup);
 
-            //                  QUEEN LOGIC
-
-            if (randomPiece == 4 && numberOfQueens != 0) {
-                pieces.add(new Queen(i, 7, WHITE));
-                pieces.add(new Queen(i, 0, BLACK));
-                piecesAdded.add("QUEEN, ");
-                numberOfQueens--;
-                continue;
-                
-            }   else if(randomPiece == 4 && numberOfQueens == 0){
-                i--;
-                piecesAdded.add("QUEEN ATTEMPTED, ");
-                continue;
-            }
-
-            //                  KING LOGIC
-
-            if (randomPiece == 5 && !(i == 0 || i == 7) && numberOfKings !=0) {
-                pieces.add(new King(i, 7, WHITE));
-                pieces.add(new King(i, 0, BLACK));
-                piecesAdded.add("KING, ");
-                numberOfKings--;
-                continue;
-            }else if((randomPiece == 5 && numberOfKings == 0) || (randomPiece == 5 && (i == 0 || i == 7))){
-                i--;
-                piecesAdded.add("KING ATTEMPTED, ");
-                continue;
+        //Only touch the piece list once the rank is known to be legal, so a rejected
+        //shuffle never leaves half a back rank behind
+        for (int col = 0; col < backRank.length; col++) {
+            switch (backRank[col]) {
+                case BISHOP:
+                    pieces.add(new Bishop(col, 7, WHITE));
+                    pieces.add(new Bishop(col, 0, BLACK));
+                    break;
+                case KNIGHT:
+                    pieces.add(new Knight(col, 7, WHITE));
+                    pieces.add(new Knight(col, 0, BLACK));
+                    break;
+                case ROOK:
+                    pieces.add(new Rook(col, 7, WHITE));
+                    pieces.add(new Rook(col, 0, BLACK));
+                    break;
+                case QUEEN:
+                    pieces.add(new Queen(col, 7, WHITE));
+                    pieces.add(new Queen(col, 0, BLACK));
+                    break;
+                case KING:
+                    pieces.add(new King(col, 7, WHITE));
+                    pieces.add(new King(col, 0, BLACK));
+                    break;
+                default:
+                    break;
             }
         }
     }
