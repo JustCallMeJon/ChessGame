@@ -41,7 +41,8 @@ public class GamePanel extends JPanel implements Runnable{
         addMouseMotionListener(mouse);
         addMouseListener(mouse);
 
-        setPieces();
+        setJustPawns();
+        // setPieces();
 //        testPromotion();
 //        testIllegal();
         copyPieces(pieces, simPieces);
@@ -93,6 +94,29 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new King(4, 0,BLACK));
     }
 
+    public void setJustPawns() {
+
+        // WHITE TEAM
+        pieces.add(new  Pawn(0, 6, WHITE));
+        pieces.add(new  Pawn(1, 6, WHITE));
+        pieces.add(new  Pawn(2, 6, WHITE));
+        pieces.add(new  Pawn(3, 6, WHITE));
+        pieces.add(new  Pawn(4, 6, WHITE));
+        pieces.add(new  Pawn(5, 6, WHITE));
+        pieces.add(new  Pawn(6, 6, WHITE));
+        pieces.add(new  Pawn(7, 6, WHITE));
+
+        // BLACK TEAM
+        pieces.add(new Pawn(0, 1,BLACK));
+        pieces.add(new Pawn(1, 1,BLACK));
+        pieces.add(new Pawn(2, 1,BLACK));
+        pieces.add(new Pawn(3, 1,BLACK));
+        pieces.add(new Pawn(4, 1,BLACK));
+        pieces.add(new Pawn(5, 1,BLACK));
+        pieces.add(new Pawn(6, 1,BLACK));
+        pieces.add(new Pawn(7, 1,BLACK));
+    }
+    
     //Test
     public void testPromotion() {
         pieces.add(new Pawn(0,4,WHITE));
