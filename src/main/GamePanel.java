@@ -42,8 +42,8 @@ public class GamePanel extends JPanel implements Runnable{
         addMouseMotionListener(mouse);
         addMouseListener(mouse);
 
-        // setJustPawns();
-        // setPieces();
+        // chessNineSixty();
+        setPieces();
 //        testPromotion();
 //        testIllegal();
         copyPieces(pieces, simPieces);
@@ -67,14 +67,15 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new  Pawn(5, 6, WHITE));
         pieces.add(new  Pawn(6, 6, WHITE));
         pieces.add(new  Pawn(7, 6, WHITE));
+
         pieces.add(new  Rook(0,7, WHITE));
-        pieces.add(new  Rook(7, 7,WHITE));
         pieces.add(new  Knight(1, 7,WHITE));
-        pieces.add(new  Knight(6, 7,WHITE));
         pieces.add(new  Bishop(2, 7,WHITE));
-        pieces.add(new  Bishop(5, 7,WHITE));
         pieces.add(new  Queen(3, 7,WHITE));
         pieces.add(new  King(4, 7,WHITE));
+        pieces.add(new  Bishop(5, 7,WHITE));
+        pieces.add(new  Knight(6, 7,WHITE));
+        pieces.add(new  Rook(7, 7,WHITE));
 
         // BLACK TEAM
         pieces.add(new Pawn(0, 1,BLACK));
@@ -85,6 +86,7 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new Pawn(5, 1,BLACK));
         pieces.add(new Pawn(6, 1,BLACK));
         pieces.add(new Pawn(7, 1,BLACK));
+
         pieces.add(new Rook(0, 0,BLACK));
         pieces.add(new Rook(7, 0,BLACK));
         pieces.add(new Knight(1, 0,BLACK));
@@ -128,6 +130,7 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new  Pawn(5, 6, WHITE));
         pieces.add(new  Pawn(6, 6, WHITE));
         pieces.add(new  Pawn(7, 6, WHITE));
+        chessNineSixtyWhitePieces();
 
     //     // BLACK TEAM
         pieces.add(new Pawn(0, 1,BLACK));
@@ -139,10 +142,26 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new Pawn(6, 1,BLACK));
         pieces.add(new Pawn(7, 1,BLACK));
 
+        pieces.add(new Rook(0, 0,BLACK));
+        pieces.add(new Rook(7, 0,BLACK));
+
+        pieces.add(new Knight(1, 0,BLACK));
+        pieces.add(new Knight(6, 0,BLACK));
+
+        pieces.add(new Bishop(2, 0,BLACK));
+        pieces.add(new Bishop(5, 0,BLACK));
+        
+        pieces.add(new Queen(3, 0,BLACK));
+        pieces.add(new King(4, 0,BLACK));
+
     }
 
     public void chessNineSixtyWhitePieces(){
         Random rand = new Random();
+
+        //For Documentation Purposes
+        ArrayList<String> piecesAdded = new ArrayList<>();
+
         int numberOfBishops = 2;
         int numberOfKnights = 2;
         int numberOfRooks = 2;
@@ -155,60 +174,67 @@ public class GamePanel extends JPanel implements Runnable{
             //Select the piece to place.
             int randomPiece = rand.nextInt(6)+1;
 
-
             //                  BISHOP LOGIC
-            if (lightTileBishop == true || numberOfBishops == 0) {
-                i--;
-                continue;
-            }else if (randomPiece == 2 && i % 2 == 0) {
-                lightTileBishop = true;
-                pieces.add(new Bishop(i, 6, WHITE));
-                numberOfBishops--;
-                continue;
-            }
-            if (dankTileBishop == true || numberOfBishops == 0) {
-                i--;
-                continue;
-            }else if (randomPiece == 2 && i % 2 != 0) {
-                dankTileBishop = true;
-                pieces.add(new Bishop(i, 6, WHITE));
-                numberOfBishops--;
-                continue;
+
+            if (randomPiece == 1 && numberOfBishops !=0) {
+                if (i % 2 == 0) {
+                    if (lightTileBishop == true) {
+                        i--;
+                        continue;
+                    }else{
+                        pieces.add(new Bishop(i, 7, WHITE));
+                        numberOfBishops--;
+                        lightTileBishop = true;
+                        continue;
+                    }
+                }else{
+                    if (dankTileBishop == true) {
+                        i--;
+                        continue;
+                    }else{
+                        pieces.add(new Bishop(i, 7, WHITE));
+                        numberOfBishops--;
+                        dankTileBishop = true;
+                        continue;
+                    }
+                }
             }
 
             //                  KNIGHT LOGIC
             if (randomPiece == 1 && numberOfKnights != 0) {
-                pieces.add(new Knight(i, 6, WHITE));
+                pieces.add(new Knight(i, 7, WHITE));
+                piecesAdded.add("KNIGHT, ");
                 numberOfKnights--;
             }else{
-                i--;
                 continue;
             }
 
             //                  ROOK LOGIC
             if (randomPiece == 3 && numberOfRooks != 0) {
-                pieces.add(new Rook(i, 6, WHITE));
+                pieces.add(new Rook(i, 7, WHITE));
+                piecesAdded.add("ROOK, ");
                 numberOfRooks--;
             }else{
-                i--;
                 continue;
             }
 
             //                  QUEEN LOGIC
 
             if (randomPiece == 4 && numberOfQueens != 0) {
-                pieces.add(new Queen(i, 6, WHITE));
+                pieces.add(new Queen(i, 7, WHITE));
+                piecesAdded.add("QUEEN, ");
                 numberOfQueens--;
                 
             }else{
-                i--;
                 continue;
             }
 
-            //If the column is 0 or 7 and a king is to be placed, reroll.
-            if (randomPiece == 5 && (i == 0 || i == 7)) {
-                i--;
-                continue;
+            //                  KING LOGIC
+
+            if (randomPiece == 5 && !(i == 0 || i == 7) && numberOfKings !=0) {
+                pieces.add(new King(i, 7, WHITE));
+                piecesAdded.add("KING, ");
+                numberOfKings--;
             }
         }
     }
