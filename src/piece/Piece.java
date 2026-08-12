@@ -7,7 +7,9 @@ import main.Type;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Piece {
 
@@ -31,12 +33,24 @@ public class Piece {
 
     public BufferedImage getImage(String imagePath) {
         BufferedImage image = null;
-        try {
-            image = ImageIO.read(
-                    Piece.class.getResourceAsStream(imagePath + ".png"));
-        }catch (IOException e){
+
+        try (InputStream inputStream = Piece.class.getResourceAsStream(imagePath + ".png")) {
+            if (inputStream != null) {
+                image = ImageIO.read(inputStream);
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (image == null) {
+            File fallbackFile = new File("res" + imagePath + ".png");
+            try {
+                image = ImageIO.read(fallbackFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         return image;
     }
 

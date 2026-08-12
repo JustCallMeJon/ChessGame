@@ -5,6 +5,7 @@ import piece.*;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class GamePanel extends JPanel implements Runnable{
     public static final int WIDTH = 800;
@@ -41,9 +42,8 @@ public class GamePanel extends JPanel implements Runnable{
         addMouseMotionListener(mouse);
         addMouseListener(mouse);
 
-        setPieces();
-//        testPromotion();
-//        testIllegal();
+        // chessNineSixty();
+        // setPieces();
         copyPieces(pieces, simPieces);
     }
 
@@ -65,14 +65,15 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new  Pawn(5, 6, WHITE));
         pieces.add(new  Pawn(6, 6, WHITE));
         pieces.add(new  Pawn(7, 6, WHITE));
+
         pieces.add(new  Rook(0,7, WHITE));
-        pieces.add(new  Rook(7, 7,WHITE));
         pieces.add(new  Knight(1, 7,WHITE));
-        pieces.add(new  Knight(6, 7,WHITE));
         pieces.add(new  Bishop(2, 7,WHITE));
-        pieces.add(new  Bishop(5, 7,WHITE));
         pieces.add(new  Queen(3, 7,WHITE));
         pieces.add(new  King(4, 7,WHITE));
+        pieces.add(new  Bishop(5, 7,WHITE));
+        pieces.add(new  Knight(6, 7,WHITE));
+        pieces.add(new  Rook(7, 7,WHITE));
 
         // BLACK TEAM
         pieces.add(new Pawn(0, 1,BLACK));
@@ -83,6 +84,7 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new Pawn(5, 1,BLACK));
         pieces.add(new Pawn(6, 1,BLACK));
         pieces.add(new Pawn(7, 1,BLACK));
+
         pieces.add(new Rook(0, 0,BLACK));
         pieces.add(new Rook(7, 0,BLACK));
         pieces.add(new Knight(1, 0,BLACK));
@@ -93,6 +95,120 @@ public class GamePanel extends JPanel implements Runnable{
         pieces.add(new King(4, 0,BLACK));
     }
 
+
+
+    public void chessNineSixty(){
+            //     // WHITE TEAM
+        pieces.add(new  Pawn(0, 6, WHITE));
+        pieces.add(new  Pawn(1, 6, WHITE));
+        pieces.add(new  Pawn(2, 6, WHITE));
+        pieces.add(new  Pawn(3, 6, WHITE));
+        pieces.add(new  Pawn(4, 6, WHITE));
+        pieces.add(new  Pawn(5, 6, WHITE));
+        pieces.add(new  Pawn(6, 6, WHITE));
+        pieces.add(new  Pawn(7, 6, WHITE));
+
+    //     // BLACK TEAM
+        pieces.add(new Pawn(0, 1,BLACK));
+        pieces.add(new Pawn(1, 1,BLACK));
+        pieces.add(new Pawn(2, 1,BLACK));
+        pieces.add(new Pawn(3, 1,BLACK));
+        pieces.add(new Pawn(4, 1,BLACK));
+        pieces.add(new Pawn(5, 1,BLACK));
+        pieces.add(new Pawn(6, 1,BLACK));
+        pieces.add(new Pawn(7, 1,BLACK));
+
+        chessNineSixtyPieces();
+
+    }
+
+    public void chessNineSixtyPieces(){
+        Random rand = new Random();
+
+        //Piece codes for the back rank. Final locals so they can be used as switch labels.
+        final int BISHOP = 0;
+        final int KNIGHT = 1;
+        final int ROOK = 2;
+        final int QUEEN = 3;
+        final int KING = 4;
+
+        //The eight pieces that make up a back rank, in any order
+        int[] backRank = {BISHOP, BISHOP, KNIGHT, KNIGHT, ROOK, ROOK, QUEEN, KING};
+
+        //Shuffle the whole rank, then keep it only if it is a legal Chess960 setup.
+        //Judging a finished rank instead of one square at a time is what makes this
+        //terminate: a square-by-square placer can reach a dead end it cannot back out of.
+        boolean legalSetup;
+
+        do {
+            //Fisher-Yates shuffle
+            for (int i = backRank.length - 1; i > 0; i--) {
+                int j = rand.nextInt(i + 1);
+                int temp = backRank[i];
+                backRank[i] = backRank[j];
+                backRank[j] = temp;
+            }
+
+            //Find the pieces whose placement is restricted
+            int firstBishop = -1, secondBishop = -1;
+            int firstRook = -1, secondRook = -1;
+            int king = -1;
+
+            for (int col = 0; col < backRank.length; col++) {
+                if (backRank[col] == BISHOP) {
+                    if (firstBishop == -1) {
+                        firstBishop = col;
+                    } else {
+                        secondBishop = col;
+                    }
+                } else if (backRank[col] == ROOK) {
+                    if (firstRook == -1) {
+                        firstRook = col;
+                    } else {
+                        secondRook = col;
+                    }
+                } else if (backRank[col] == KING) {
+                    king = col;
+                }
+            }
+
+            //The two bishops must land on opposite coloured squares, and the king must sit
+            //between the two rooks so that both castling moves have a rook to castle with
+            legalSetup = (firstBishop % 2) != (secondBishop % 2)
+                    && firstRook < king && king < secondRook;
+
+        } while (!legalSetup);
+
+        //Only touch the piece list once the rank is known to be legal, so a rejected
+        //shuffle never leaves half a back rank behind
+        for (int col = 0; col < backRank.length; col++) {
+            switch (backRank[col]) {
+                case BISHOP:
+                    pieces.add(new Bishop(col, 7, WHITE));
+                    pieces.add(new Bishop(col, 0, BLACK));
+                    break;
+                case KNIGHT:
+                    pieces.add(new Knight(col, 7, WHITE));
+                    pieces.add(new Knight(col, 0, BLACK));
+                    break;
+                case ROOK:
+                    pieces.add(new Rook(col, 7, WHITE));
+                    pieces.add(new Rook(col, 0, BLACK));
+                    break;
+                case QUEEN:
+                    pieces.add(new Queen(col, 7, WHITE));
+                    pieces.add(new Queen(col, 0, BLACK));
+                    break;
+                case KING:
+                    pieces.add(new King(col, 7, WHITE));
+                    pieces.add(new King(col, 0, BLACK));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
     //Test
     public void testPromotion() {
         pieces.add(new Pawn(0,4,WHITE));
